@@ -1,0 +1,30 @@
+server:
+  port: 8200
+spring:
+  application:
+    name: order-service
+  cloud:
+    nacos:
+      discovery:
+        server-addr: nacos-nginx:80
+    sentinel:
+      transport:
+        port: 8719
+        dashboard: sentinel-dashboard:8080
+  datasource:
+    url: jdbc:mysql://sample-mysql:3306/sample-oms?serverTimezone=Asia/Shanghai&useSSL=true
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    username: root
+    password: root
+mybatis-plus:
+  global-config:
+    db-config:
+      logic-delete-value: 1
+      logic-not-delete-value: 0
+  config-location: classpath:mybatis-config.xml
+logging:
+  level:
+    org.sample.springcloud.order.mapper: debug
+feign:
+  circuitbreaker:
+    enabled: true

@@ -1,0 +1,112 @@
+version: "3"
+services:
+  nacos1:
+    hostname: nacos1
+    container_name: nacos1
+    image: nacos/nacos-server:${NACOS_VERSION}
+    volumes:
+      - nacos1:/home/nacos/logs
+    env_file:
+      - ./env/nacos.env
+    restart: always
+    depends_on:
+      - nacos-mysql
+  nacos2:
+    hostname: nacos2
+    image: nacos/nacos-server:${NACOS_VERSION}
+    container_name: nacos2
+    volumes:
+      - nacos2:/home/nacos/logs
+    env_file:
+      - ./env/nacos.env
+    restart: always
+    depends_on:
+      - nacos-mysql
+  nacos3:
+    hostname: nacos3
+    image: nacos/nacos-server:${NACOS_VERSION}
+    container_name: nacos3
+    volumes:
+      - nacos3:/home/nacos/logs
+    env_file:
+      - ./env/nacos.env
+    restart: always
+    depends_on:
+      - nacos-mysql
+  nacos-mysql:
+    hostname: nacos-mysql
+    container_name: nacos-mysql
+    image: nacos/nacos-mysql:${NACOS_MYSQL_VERSION}
+    env_file:
+      - ./env/nacos-mysql.env
+    volumes:
+      - nacos-mysql:/var/lib/mysql
+    ports:
+      - "3307:3306"
+    restart: always
+  nacos-nginx:
+    hostname: nacos-nginx
+    container_name: nacos-nginx
+    image: nginx:1.22.0
+    volumes:
+      - ./conf.d/nginx/:/etc/nginx
+    ports:
+      - "8848:80"
+    depends_on:
+      - nacos1
+      - nacos2
+      - nacos3
+    restart: always
+  sample-mysql:
+    hostname: sample-mysql
+    container_name: sample-mysql
+    image: mysql:8.0.28
+    ports:
+      - "3306:3306"
+    env_file:
+      - ./env/mysql.env
+    volumes:
+      - sample-mysql-data:/var/lib/mysql
+      - sample-mysql-conf:/etc/mysql/conf.d
+    restart: always
+  sentinel-dashboard:
+    hostname: sentinel-dashboard
+    container_name: sentinel-dashboard
+    image: sentinel-dashboard:1.8.3
+    build:
+      context: sentinel-dashboard
+    ports:
+      - "9080:8080"
+    restart: always
+  order-service:
+    hostname: order-service
+    container_name: order-service
+    image: order-service:1.0-SNAPSHOT
+    build:
+      context: order-service
+    ports:
+      - "8200:8200"
+    depends_on:
+      - nacos-nginx
+      - sample-mysql
+      - sentinel-dashboard
+    restart: always
+  payment-service:
+    hostname: payment-service
+    container_name: payment-service
+    image: payment-service:1.0-SNAPSHOT
+    build:
+      context: payment-service/payment-boot
+    ports:
+      - "8100:8100"
+    depends_on:
+      - nacos-nginx
+      - sample-mysql
+    restart: always
+volumes:
+  nacos1:
+  nacos2:
+  nacos3:
+  nacos-mysql:
+  sample-mysql-data:
+  sample-mysql-conf:

@@ -1,0 +1,2 @@
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
+  org.sample.springcloud.payment.api.AccountApi.AccountApiFallback
